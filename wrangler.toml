@@ -1,0 +1,13 @@
+# Cloudflare Pages configuration
+# Deploy: npx wrangler pages deploy
+# Requires: nodejs_compat for Buffer (used by sql.js)
+
+pages_build_output_dir = "client/dist"
+compatibility_flags = ["nodejs_compat"]
+
+# Environment: production
+[env.production]
+# Add KV namespace binding in Cloudflare Dashboard:
+# Pages → {project} → Settings → Functions → KV namespace bindings
+# Variable name: DB
+# KV namespace: Create or select a KV namespace

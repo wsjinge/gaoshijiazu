@@ -2,6 +2,7 @@ import initSqlJs from 'sql.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import PREBUILT_DB_BASE64 from './db-base64.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isVercel = process.env.VERCEL === '1';
@@ -17,22 +18,60 @@ export async function getDb() {
 
   const SQL = await initSqlJs();
 
-  // Priority: runtime db > prebuilt.db > fresh empty db
+  // Priority: runtime db > prebuilt.db > base64 fallback > db_b64.txt > fresh empty db
   let loaded = false;
-  if (fs.existsSync(runtimeDbPath)) {
-    const buffer = fs.readFileSync(runtimeDbPath);
-    db = new SQL.Database(buffer);
-    loaded = true;
-  } else if (fs.existsSync(prebuiltDbPath)) {
-    const buffer = fs.readFileSync(prebuiltDbPath);
-    db = new SQL.Database(buffer);
-    loaded = true;
+  let source = 'none';
+
+  // 1) Runtime data.db (/tmp on Vercel)
+  if (!loaded && fs.existsSync(runtimeDbPath)) {
+    try {
+      const buffer = fs.readFileSync(runtimeDbPath);
+      db = new SQL.Database(buffer);
+      const cnt = db.exec('SELECT COUNT(*) FROM members')?.[0]?.values?.[0]?.[0] ?? 0;
+      if (cnt > 0) { loaded = true; source = 'runtime'; }
+    } catch (e) { console.error('db: runtime load failed', e.message); }
+  }
+
+  // 2) prebuilt.db from deployment bundle
+  if (!loaded && fs.existsSync(prebuiltDbPath)) {
+    try {
+      const buffer = fs.readFileSync(prebuiltDbPath);
+      db = new SQL.Database(buffer);
+      const cnt = db.exec('SELECT COUNT(*) FROM members')?.[0]?.values?.[0]?.[0] ?? 0;
+      if (cnt > 0) { loaded = true; source = 'prebuilt'; }
+    } catch (e) { console.error('db: prebuilt load failed', e.message); }
+  }
+
+  // 3) Embedded base64 string
+  if (!loaded && PREBUILT_DB_BASE64) {
+    try {
+      const buffer = Buffer.from(PREBUILT_DB_BASE64, 'base64');
+      db = new SQL.Database(buffer);
+      const cnt = db.exec('SELECT COUNT(*) FROM members')?.[0]?.values?.[0]?.[0] ?? 0;
+      if (cnt > 0) { loaded = true; source = 'base64'; }
+    } catch (e) { console.error('db: base64 fallback failed', e.message); }
+  }
+
+  // 4) db_b64.txt file at runtime (last resort before empty)
+  if (!loaded) {
+    try {
+      const b64path = path.join(__dirname, 'db_b64.txt');
+      if (fs.existsSync(b64path)) {
+        const b64 = fs.readFileSync(b64path, 'utf-8');
+        const buffer = Buffer.from(b64.trim(), 'base64');
+        db = new SQL.Database(buffer);
+        const cnt = db.exec('SELECT COUNT(*) FROM members')?.[0]?.values?.[0]?.[0] ?? 0;
+        if (cnt > 0) { loaded = true; source = 'b64file'; }
+      }
+    } catch (e) { console.error('db: db_b64.txt fallback failed', e.message); }
   }
 
   if (!loaded) {
+    console.log('⚠️ All database sources failed, creating empty database');
     db = new SQL.Database();
   }
 
+  console.log(`📦 Database loaded from: ${source}`);
   db.run('PRAGMA foreign_keys = ON');
   initSchema();
   return db;

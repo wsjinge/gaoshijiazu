@@ -2,12 +2,14 @@
   "name": "gaoshijiazu",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client && npm run dev",
     "start": "NODE_ENV=production node server/index.js",
-    "build": "cd client && npm install && npm run build"
+    "build": "cd client && npm install && npm run build",
+    "pages:deploy": "npm run build && npx wrangler pages deploy"
   },
   "engines": {
     "node": ">=18"

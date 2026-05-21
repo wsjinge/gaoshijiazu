@@ -60,6 +60,28 @@ app.use('/api/generations', generationsRouter);
 app.use('/api/statistics', statisticsRouter);
 app.use('/api/lunar', lunarRouter);
 
+// Diagnostic endpoint for debugging database status
+app.get('/api/health', async (req, res) => {
+  try {
+    const db = req.db;
+    const memberCount = db.exec('SELECT COUNT(*) as cnt FROM members')?.[0]?.values?.[0]?.[0] ?? 0;
+    const genCount = db.exec('SELECT COUNT(*) as cnt FROM generations')?.[0]?.values?.[0]?.[0] ?? 0;
+    const tmpDbExists = isVercel ? fs.existsSync('/tmp/data.db') : fs.existsSync(path.join(__dirname, 'data.db'));
+    const prebuiltExists = fs.existsSync(path.join(__dirname, 'prebuilt.db'));
+    res.json({
+      status: 'ok',
+      members: memberCount,
+      generations: genCount,
+      vercel: isVercel,
+      tmpDbExists,
+      prebuiltExists,
+      nodeEnv: process.env.NODE_ENV || 'development'
+    });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
+
 // Serve frontend static files (production / Vercel)
 const clientDist = path.join(__dirname, '..', 'client', 'dist');
 // Only add if client/dist actually exists (not in dev mode)
