@@ -60,4 +60,17 @@ app.use('/api/generations', generationsRouter);
 app.use('/api/statistics', statisticsRouter);
 app.use('/api/lunar', lunarRouter);
 
+// Serve frontend static files (production / Vercel)
+const clientDist = path.join(__dirname, '..', 'client', 'dist');
+// Only add if client/dist actually exists (not in dev mode)
+if (fs.existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+  // SPA fallback: any non-API, non-uploads route serves index.html
+  app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api/') && !req.path.startsWith('/uploads/')) {
+      res.sendFile(path.join(clientDist, 'index.html'));
+    }
+  });
+}
+
 export default app;

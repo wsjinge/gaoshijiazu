@@ -5,7 +5,10 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isVercel = process.env.VERCEL === '1';
-const dbPath = isVercel ? '/tmp/data.db' : path.join(__dirname, 'data.db');
+
+// On Vercel: use /tmp/data.db for runtime (writable), fallback to prebuilt.db from deployment bundle
+const runtimeDbPath = isVercel ? '/tmp/data.db' : path.join(__dirname, 'data.db');
+const prebuiltDbPath = path.join(__dirname, 'prebuilt.db');
 
 let db = null;
 
@@ -14,10 +17,19 @@ export async function getDb() {
 
   const SQL = await initSqlJs();
 
-  if (fs.existsSync(dbPath)) {
-    const buffer = fs.readFileSync(dbPath);
+  // Priority: runtime db > prebuilt.db > fresh empty db
+  let loaded = false;
+  if (fs.existsSync(runtimeDbPath)) {
+    const buffer = fs.readFileSync(runtimeDbPath);
     db = new SQL.Database(buffer);
-  } else {
+    loaded = true;
+  } else if (fs.existsSync(prebuiltDbPath)) {
+    const buffer = fs.readFileSync(prebuiltDbPath);
+    db = new SQL.Database(buffer);
+    loaded = true;
+  }
+
+  if (!loaded) {
     db = new SQL.Database();
   }
 
@@ -97,7 +109,7 @@ export function save() {
   if (db) {
     const data = db.export();
     const buffer = Buffer.from(data);
-    fs.writeFileSync(dbPath, buffer);
+    fs.writeFileSync(runtimeDbPath, buffer);
   }
 }
 
