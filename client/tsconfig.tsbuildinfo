@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/api/index.ts","./src/components/familytree/index.tsx","./src/components/importexport/index.tsx","./src/components/lunarcalendar/index.tsx","./src/components/memberform/index.tsx","./src/components/relationship/index.tsx","./src/components/statistics/index.tsx","./src/types/index.ts"],"version":"5.9.3"}
