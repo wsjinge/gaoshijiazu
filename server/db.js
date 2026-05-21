@@ -4,7 +4,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPath = path.join(__dirname, 'data.db');
+const isVercel = process.env.VERCEL === '1';
+const dbPath = isVercel ? '/tmp/data.db' : path.join(__dirname, 'data.db');
 
 let db = null;
 
