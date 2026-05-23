@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高氏家族谱系数据预览</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .info {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            background: #e0e0e0;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .content {
+            margin-top: 20px;
+        }
+
+        .generation-section {
+            margin-bottom: 40px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+
+        .generation-title {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background: #f0f0f0;
+        }
+
+        tr:hover {
+            background: #e0e0e0;
+        }
+
+        .null-value {
+            color: #999;
+            font-style: italic;
+        }
+
+        .stats {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            table {
+                font-size: 12px;
+            }
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📖 高氏家族谱系数据可视化</h1>
+        <div class="info">
+            数据来源: 高氏家族.xls → JSON 转换<br>
+            转换时间: 2026-05-22
+        </div>
+
+        <div class="stats">
+            <h2 style="margin-bottom: 15px;">📊 数据统计</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">7</div>
+                    <div class="stat-label">世代记录</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">73</div>
+                    <div class="stat-label">家族成员</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">工作表</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs" id="tabs">
+            <!-- Tabs will be generated dynamically -->
+        </div>
+
+        <div class="content" id="content">
+            <!-- Content will be loaded dynamically -->
+        </div>
+
+        <div class="footer">
+            © 2026 高氏家族谱系系统 | Cloudflare Pages 部署
+        </div>
+    </div>
+
+    <script>
+        // 加载 JSON 数据
+        async function loadData() {
+            try {
+                const response = await fetch('高氏家族.json');
+                const data = await response.json();
+                renderData(data);
+            } catch (error) {
+                console.error('加载数据失败:', error);
+                document.getElementById('content').innerHTML = `
+                    <div style="text-align: center; padding: 50px; color: #999;">
+                        <p>❌ 无法加载 JSON 数据</p>
+                        <p>请确保 '高氏家族.json' 文件存在</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 渲染数据
+        function renderData(data) {
+            const tabsContainer = document.getElementById('tabs');
+            const contentContainer = document.getElementById('content');
+
+            // 创建标签
+            const sheetNames = Object.keys(data);
+            sheetNames.forEach((name, index) => {
+                const tab = document.createElement('button');
+                tab.className = index === 0 ? 'tab active' : 'tab';
+                tab.textContent = name;
+                tab.onclick = () => showSheet(name, sheetNames);
+                tabsContainer.appendChild(tab);
+            });
+
+            // 显示第一个工作表
+            showSheet(sheetNames[0], sheetNames);
+        }
+
+        // 显示指定工作表
+        function showSheet(sheetName, allSheets) {
+            // 更新标签状态
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.className = tab.textContent === sheetName ? 'tab active' : 'tab';
+            });
+
+            // 加载并显示数据
+            fetch('高氏家族.json')
+                .then(response => response.json())
+                .then(data => {
+                    const sheetData = data[sheetName];
+                    const contentContainer = document.getElementById('content');
+
+                    if (!sheetData || sheetData.total === 0) {
+                        contentContainer.innerHTML = `
+                            <div style="text-align: center; padding: 50px; color: #999;">
+                                <p>此工作表无数据</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    // 渲染表格
+                    let html = `
+                        <div class="generation-section">
+                            <div class="generation-title">工作表: ${sheetName}</div>
+                            <p style="color: #666; margin-bottom: 15px;">
+                                共 ${sheetData.total} 行数据 | ${sheetData.headers.length} 列
+                            </p>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        ${sheetData.headers.map(h => `<th>${h}</th>`).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${sheetData.rows.map(row => `
+                                        <tr>
+                                            ${sheetData.headers.map(h => `
+                                                <td>${row[h] !== null ? row[h] : '<span class="null-value">-</span>'}</td>
+                                            `).join('')}
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+
+                    contentContainer.innerHTML = html;
+                });
+        }
+
+        // 页面加载时执行
+        loadData();
+    </script>
+</body>
+</html>
