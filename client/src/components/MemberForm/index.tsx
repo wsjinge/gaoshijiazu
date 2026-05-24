@@ -21,6 +21,10 @@ const MemberForm: React.FC<Props> = ({ members, editMember, parentId, onClose })
 
   useEffect(() => {
     getGenerations().then(setGenerations);
+  }, []);
+
+  useEffect(() => {
+    if (!editMember && generations.length === 0) return;
     if (editMember) {
       form.setFieldsValue({
         name: editMember.name,
@@ -44,6 +48,8 @@ const MemberForm: React.FC<Props> = ({ members, editMember, parentId, onClose })
         is_shang: editMember.is_shang === 1,
         has_posterity: editMember.has_posterity === 1,
         notes: editMember.notes,
+        burial: editMember.burial,
+        residence: editMember.residence,
         spouse_info: editMember.spouse_info?.length > 0 ? editMember.spouse_info : [],
       });
       setAvatarUrl(editMember.avatar || null);

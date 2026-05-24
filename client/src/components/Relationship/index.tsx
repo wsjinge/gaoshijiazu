@@ -61,8 +61,9 @@ function findPath(allMembers: Member[], fromId: number, toId: number): string {
 
   // Same level (same generation distance from common ancestor)
   if (fromGenDiff === toGenDiff) {
-    if (fromGenDiff === 1) return '堂兄弟关系（同一祖父）';
-    if (fromGenDiff === 2) return '再从兄弟关系（同一曾祖）';
+    if (fromGenDiff === 1) return '亲兄弟关系';
+    if (fromGenDiff === 2) return '堂兄弟关系（同一祖父）';
+    if (fromGenDiff === 3) return '再从兄弟关系（同一曾祖）';
     return `同族第${fromGenDiff}代兄弟`;
   }
 

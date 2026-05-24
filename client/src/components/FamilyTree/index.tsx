@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Tag, Button, Tooltip, Modal, message, Space, Upload, Collapse } from 'antd';
-import { PlusOutlined, EditOutlined, WomanOutlined, ManOutlined, CameraOutlined, DownOutlined, RightOutlined, LoadingOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Tag, Button, Tooltip, Modal, message, Space, Upload, Spin } from 'antd';
+import { PlusOutlined, EditOutlined, WomanOutlined, ManOutlined, CameraOutlined, DownOutlined, RightOutlined } from '@ant-design/icons';
 import type { Member } from '../../types';
 import MemberForm from '../MemberForm';
-import { updateMember, uploadAvatar, getMemberChildren, getMembers } from '../../api';
+import { updateMember, uploadAvatar } from '../../api';
 import axios from 'axios';
 
 interface Props {
-  treeData: Member[];
   members: Member[];
   selectedMember: Member | null;
   onSelect: (m: Member | null) => void;
@@ -28,23 +27,29 @@ async function getLunarFull(year: number | null, month: number | null, day: numb
   } catch { return null; }
 }
 
-const FamilyTreePage: React.FC<Props> = ({ treeData, members, selectedMember, onSelect, onAdd, onEdit, onUpdate }) => {
+const FamilyTreePage: React.FC<Props> = ({ members, selectedMember, onSelect, onAdd, onEdit, onUpdate }) => {
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
   const [childrenMap, setChildrenMap] = useState<Record<number, Member[]>>({});
-  const [loadingChildren, setLoadingChildren] = useState<Set<number>>(new Set());
   const [showForm, setShowForm] = useState(false);
   const [editMember, setEditMember] = useState<Member | null>(null);
   const [formParentId, setFormParentId] = useState<number | null>(null);
   const [lunarTexts, setLunarTexts] = useState<Record<string, any>>({});
-  const [treeVersion, setTreeVersion] = useState(0);
 
-  // Clear cached tree when members change (after add/edit)
+  // Build children map from local members data (instant, no API calls)
   useEffect(() => {
-    setChildrenMap({});
+    const map: Record<number, Member[]> = {};
+    members.forEach(m => {
+      if (m.father_id) {
+        if (!map[m.father_id]) map[m.father_id] = [];
+        map[m.father_id].push(m);
+      }
+    });
+    // Sort children by order_index then father_order for correct sibling order
+    Object.values(map).forEach(arr => arr.sort((a, b) => (a.order_index || 0) - (b.order_index || 0) || (a.father_order || 0) - (b.father_order || 0)));
+    setChildrenMap(map);
     setExpandedIds(new Set());
     setLunarTexts({});
-    setTreeVersion(v => v + 1);
-  }, [members.length]);
+  }, [members]);
 
   // Load lunar dates for selected member
   useEffect(() => {
@@ -56,7 +61,7 @@ const FamilyTreePage: React.FC<Props> = ({ treeData, members, selectedMember, on
         });
       }
       const key2 = `death-${selectedMember.id}`;
-      if (!lunarTexts[key2] && selectedMember.is_deceased && selectedMember.death_year) {
+      if (!lunarTexts[key2] && selectedMember.is_deceased) {
         getLunarFull(selectedMember.death_year, selectedMember.death_month, selectedMember.death_day, selectedMember.death_hour, selectedMember.death_minute, 'death').then(d => {
           if (d) setLunarTexts(prev => ({ ...prev, [key2]: d }));
         });
@@ -74,34 +79,15 @@ const FamilyTreePage: React.FC<Props> = ({ treeData, members, selectedMember, on
   // Get root members (generation 17)
   const rootMembers = members.filter(m => m.gen_number === 17);
 
-  // Toggle expand/collapse
-  const toggleExpand = async (member: Member) => {
+  // Toggle expand/collapse (instant, using local data)
+  const toggleExpand = (member: Member) => {
     const newExpanded = new Set(expandedIds);
     if (newExpanded.has(member.id)) {
       newExpanded.delete(member.id);
-      setExpandedIds(newExpanded);
-      return;
+    } else {
+      newExpanded.add(member.id);
     }
-
-    // If not expanded, load children
-    newExpanded.add(member.id);
     setExpandedIds(newExpanded);
-
-    // Load children from API if not already loaded
-    if (!childrenMap[member.id]) {
-      setLoadingChildren(prev => new Set(prev).add(member.id));
-      try {
-        const children = await getMemberChildren(member.id);
-        setChildrenMap(prev => ({ ...prev, [member.id]: children }));
-      } catch (e) {
-        console.error('Failed to load children', e);
-      }
-      setLoadingChildren(prev => {
-        const next = new Set(prev);
-        next.delete(member.id);
-        return next;
-      });
-    }
   };
 
   // Handle add from "+" button
@@ -141,9 +127,8 @@ const FamilyTreePage: React.FC<Props> = ({ treeData, members, selectedMember, on
   // Recursive render tree node
   const renderNode = (member: Member, depth: number = 0) => {
     const isExpanded = expandedIds.has(member.id);
-    const isLoading = loadingChildren.has(member.id);
     const children = childrenMap[member.id];
-    const hasChildren = member.has_posterity === 1;
+    const hasChildren = children && children.length > 0;
     const isSelected = selectedMember?.id === member.id;
     const isDeceased = member.is_deceased === 1;
 
@@ -166,7 +151,7 @@ const FamilyTreePage: React.FC<Props> = ({ treeData, members, selectedMember, on
                 fontSize: 12, color: '#8B4513'
               }}
             >
-              {isLoading ? <LoadingOutlined /> : isExpanded ? <DownOutlined /> : <RightOutlined />}
+              {isExpanded ? <DownOutlined /> : <RightOutlined />}
             </div>
           ) : (
             <div style={{ width: 24, marginRight: 8, flexShrink: 0 }} />
@@ -257,7 +242,7 @@ const FamilyTreePage: React.FC<Props> = ({ treeData, members, selectedMember, on
         )}
 
         {/* No children message */}
-        {isExpanded && (!children || children.length === 0) && !isLoading && (
+        {isExpanded && (!children || children.length === 0) && (
           <div style={{ marginLeft: 100, color: '#ccc', fontSize: 12, fontStyle: 'italic', padding: '4px 0 8px' }}>
             ─ 暂无后代记录（可点击+号添加）
           </div>
@@ -268,6 +253,13 @@ const FamilyTreePage: React.FC<Props> = ({ treeData, members, selectedMember, on
 
   return (
     <div>
+      {members.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '60px 0' }}>
+          <Spin size="large" />
+          <div style={{ marginTop: 16, color: '#999' }}>加载族谱数据中...</div>
+        </div>
+      ) : (
+      <>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Space>
           <span style={{ fontSize: 16, fontWeight: 600, color: '#8B4513' }}>📋 高氏家族族谱</span>
@@ -362,13 +354,13 @@ const FamilyTreePage: React.FC<Props> = ({ treeData, members, selectedMember, on
                   </div>
                 </Col>
               )}
-              {selectedMember.is_deceased && selectedMember.death_year && (
+              {selectedMember.is_deceased && (
                 <Col span={24}>
                   <div style={{ background: '#f5f5f5', borderRadius: 6, padding: 8 }}>
                     <div style={{ fontSize: 12, color: '#999', marginBottom: 4 }}>📅 殁辰</div>
                     <div style={{ fontSize: 13, lineHeight: 1.8 }}>
                       <div style={{ fontWeight: 500 }}>
-                        {lunarTexts[`death-${selectedMember.id}`]?.text || `殁于${selectedMember.death_year}年`}
+                        {lunarTexts[`death-${selectedMember.id}`]?.text || (selectedMember.death_year ? `殁于${selectedMember.death_year}年` : '殁于：未详')}
                       </div>
                       {selectedMember.death_year && (
                         <div style={{ color: '#999', marginTop: 2 }}>
@@ -407,12 +399,6 @@ const FamilyTreePage: React.FC<Props> = ({ treeData, members, selectedMember, on
               {selectedMember.notes && (
                 <Col span={24}><strong>备注：</strong><span style={{ color: '#666' }}>{selectedMember.notes}</span></Col>
               )}
-              {selectedMember.burial && (
-                <Col span={24}><strong>葬地：</strong><span style={{ color: '#666' }}>{selectedMember.burial}</span></Col>
-              )}
-              {selectedMember.residence && (
-                <Col span={24}><strong>居地：</strong><span style={{ color: '#666' }}>{selectedMember.residence}</span></Col>
-              )}
             </Row>
           </Card>
 
@@ -444,6 +430,8 @@ const FamilyTreePage: React.FC<Props> = ({ treeData, members, selectedMember, on
           onClose={handleFormClose}
         />
       </Modal>
+      </>
+      )}
     </div>
   );
 };

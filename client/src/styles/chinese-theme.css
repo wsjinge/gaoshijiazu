@@ -1,0 +1,431 @@
+/* ============================================
+   高氏家族族谱 — 中式复古主题
+   中华传统美学 · 古典雅韵
+   ============================================ */
+
+/* --- 全局背景与字体 --- */
+body {
+  background: #EDE0C8 !important;
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'SimSun', 'STSong', serif !important;
+}
+
+/* --- 宣纸纹理背景（通过半透明叠加营造质感） --- */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(139, 69, 19, 0.015) 2px,
+      rgba(139, 69, 19, 0.015) 4px
+    );
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* --- 传统云纹装饰（顶部横幅） --- */
+.classical-header-bg {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(201, 169, 110, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 50%, rgba(201, 169, 110, 0.08) 0%, transparent 50%);
+}
+
+/* --- 侧边栏 — 仿古书卷风格 --- */
+.ant-layout-sider {
+  background: linear-gradient(180deg, #F5E6C8 0%, #EDE0C8 100%) !important;
+  border-right: 2px solid #C9A96E !important;
+  box-shadow: 2px 0 12px rgba(139, 69, 19, 0.08) !important;
+  position: relative;
+}
+
+.ant-layout-sider::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -1px;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, #C9A96E, #8B4513, #C9A96E);
+  opacity: 0.4;
+}
+
+/* --- 侧边栏标题 — 匾额风格 --- */
+.sider-title {
+  font-family: 'Noto Serif SC', 'STKaiti', 'KaiTi', serif !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: #8B4513 !important;
+  letter-spacing: 4px;
+  text-align: center;
+  padding: 16px 0;
+  border-bottom: 2px solid #C9A96E;
+  position: relative;
+  text-shadow: 1px 1px 2px rgba(139, 69, 19, 0.1);
+}
+
+.sider-title::before,
+.sider-title::after {
+  content: '◆';
+  color: #C9A96E;
+  font-size: 10px;
+  margin: 0 8px;
+  vertical-align: middle;
+}
+
+/* --- 菜单项 — 传统竖排文字质感 --- */
+.ant-menu {
+  background: transparent !important;
+  border-right: none !important;
+}
+
+.ant-menu-item {
+  font-family: 'Noto Serif SC', 'STKaiti', 'KaiTi', serif !important;
+  font-size: 15px !important;
+  color: #5C3D2E !important;
+  border-radius: 6px !important;
+  margin: 4px 8px !important;
+  padding: 6px 16px !important;
+  transition: all 0.3s ease !important;
+  position: relative;
+}
+
+.ant-menu-item:hover {
+  color: #B22222 !important;
+  background: rgba(178, 34, 34, 0.06) !important;
+}
+
+.ant-menu-item-selected {
+  color: #B22222 !important;
+  background: rgba(178, 34, 34, 0.1) !important;
+  font-weight: 600 !important;
+}
+
+.ant-menu-item-selected::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 25%;
+  height: 50%;
+  width: 3px;
+  background: #B22222;
+  border-radius: 2px;
+}
+
+/* --- 主内容区 — 宣纸底色 --- */
+.ant-layout-content {
+  background: #F5E6C8 !important;
+}
+
+/* --- 卡片 — 仿古书页 --- */
+.ant-card {
+  background: #FFF8DC !important;
+  border: 1px solid #C9A96E !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(139, 69, 19, 0.08) !important;
+  position: relative;
+}
+
+.ant-card-bordered {
+  border-color: #C9A96E !important;
+}
+
+.ant-card-head {
+  border-bottom: 1px solid #C9A96E !important;
+  color: #8B4513 !important;
+  font-family: 'Noto Serif SC', 'STKaiti', 'KaiTi', serif !important;
+  font-weight: 600;
+}
+
+/* --- 按钮 — 传统朱红/檀木 --- */
+.ant-btn-primary {
+  background: linear-gradient(135deg, #B22222, #8B0000) !important;
+  border-color: #8B0000 !important;
+  color: #fff !important;
+  box-shadow: 0 2px 6px rgba(178, 34, 34, 0.3) !important;
+  font-family: 'Noto Serif SC', 'STKaiti', 'KaiTi', serif !important;
+}
+
+.ant-btn-primary:hover {
+  background: linear-gradient(135deg, #C62828, #B22222) !important;
+  border-color: #B22222 !important;
+  box-shadow: 0 4px 12px rgba(178, 34, 34, 0.4) !important;
+}
+
+.ant-btn-default {
+  border-color: #C9A96E !important;
+  color: #8B4513 !important;
+  background: #FFF8DC !important;
+}
+
+.ant-btn-default:hover {
+  border-color: #B22222 !important;
+  color: #B22222 !important;
+  background: #FFF0E0 !important;
+}
+
+.ant-btn-dashed {
+  border-color: #C9A96E !important;
+  color: #8B4513 !important;
+  background: transparent !important;
+}
+
+.ant-btn-dashed:hover {
+  border-color: #B22222 !important;
+  color: #B22222 !important;
+}
+
+/* --- 标签Tag — 中式风格 --- */
+.ant-tag {
+  font-family: 'Noto Serif SC', 'STKaiti', 'KaiTi', serif !important;
+  border-radius: 4px !important;
+  padding: 1px 8px !important;
+}
+
+/* --- 输入框 — 仿古笺 --- */
+.ant-input {
+  background: #FFFAF0 !important;
+  border-color: #D4C5A0 !important;
+  color: #2C2C2C !important;
+  font-family: 'Noto Serif SC', 'STKaiti', 'KaiTi', serif !important;
+}
+
+.ant-input:hover,
+.ant-input:focus {
+  border-color: #B22222 !important;
+  box-shadow: 0 0 0 2px rgba(178, 34, 34, 0.1) !important;
+}
+
+.ant-input-affix-wrapper {
+  background: #FFFAF0 !important;
+  border-color: #D4C5A0 !important;
+}
+
+.ant-input-affix-wrapper:hover,
+.ant-input-affix-wrapper-focused {
+  border-color: #B22222 !important;
+  box-shadow: 0 0 0 2px rgba(178, 34, 34, 0.1) !important;
+}
+
+/* --- 选择器 --- */
+.ant-select-selector {
+  background: #FFFAF0 !important;
+  border-color: #D4C5A0 !important;
+}
+
+.ant-select:hover .ant-select-selector {
+  border-color: #B22222 !important;
+}
+
+/* --- 日期选择器 --- */
+.ant-picker {
+  background: #FFFAF0 !important;
+  border-color: #D4C5A0 !important;
+}
+
+.ant-picker:hover,
+.ant-picker-focused {
+  border-color: #B22222 !important;
+}
+
+/* --- 表格 --- */
+.ant-table {
+  background: #FFF8DC !important;
+}
+
+.ant-table-thead > tr > th {
+  background: #EDE0C8 !important;
+  color: #8B4513 !important;
+  font-family: 'Noto Serif SC', 'STKaiti', 'KaiTi', serif !important;
+  font-weight: 600 !important;
+  border-bottom: 2px solid #C9A96E !important;
+}
+
+.ant-table-tbody > tr > td {
+  border-bottom: 1px solid #E8DCC8 !important;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: rgba(178, 34, 34, 0.04) !important;
+}
+
+/* --- 模态框 --- */
+.ant-modal-content {
+  background: #FFF8DC !important;
+  border: 1px solid #C9A96E !important;
+}
+
+.ant-modal-header {
+  background: #FFF8DC !important;
+  border-bottom: 1px solid #C9A96E !important;
+}
+
+.ant-modal-title {
+  color: #8B4513 !important;
+  font-family: 'Noto Serif SC', 'STKaiti', 'KaiTi', serif !important;
+  font-weight: 600 !important;
+}
+
+/* --- 族谱树节点 — 中式卡片风格 --- */
+.member-node {
+  background: #FFF8DC !important;
+  border-color: #C9A96E !important;
+  box-shadow: 0 2px 6px rgba(139, 69, 19, 0.1) !important;
+  position: relative;
+  transition: all 0.3s ease !important;
+}
+
+.member-node::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(201, 169, 110, 0.3);
+  border-radius: 9px;
+  pointer-events: none;
+}
+
+.member-node:hover {
+  border-color: #B22222 !important;
+  box-shadow: 0 4px 16px rgba(178, 34, 34, 0.15) !important;
+  transform: translateY(-2px);
+}
+
+.member-node.selected {
+  border-color: #B22222 !important;
+  box-shadow: 0 0 0 2px rgba(178, 34, 34, 0.25) !important;
+}
+
+.member-node.deceased {
+  background: #F5F0E0 !important;
+  opacity: 0.85;
+}
+
+.member-node .avatar-wrapper {
+  border-color: #C9A96E !important;
+  background: #F5E6C8 !important;
+}
+
+/* --- 详情面板 — 仿古卷轴 --- */
+.details-panel {
+  background: linear-gradient(180deg, #FFF8DC 0%, #F5E6C8 100%) !important;
+  border-left: 2px solid #C9A96E !important;
+  box-shadow: -4px 0 20px rgba(139, 69, 19, 0.12) !important;
+}
+
+/* --- 农历生辰卡片 --- */
+.lunar-result {
+  background: #FFF8DC !important;
+  border-color: #C9A96E !important;
+  position: relative;
+}
+
+.lunar-result::before {
+  content: '☰';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #C9A96E;
+  font-size: 16px;
+}
+
+/* --- 统计卡片 --- */
+.stat-card {
+  background: #FFF8DC !important;
+  border: 1px solid #C9A96E !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  border-color: #B22222 !important;
+  box-shadow: 0 4px 12px rgba(178, 34, 34, 0.1);
+}
+
+/* --- 关系查询 --- */
+.ant-collapse {
+  background: #FFF8DC !important;
+  border-color: #C9A96E !important;
+}
+
+.ant-collapse-header {
+  color: #8B4513 !important;
+  font-family: 'Noto Serif SC', 'STKaiti', 'KaiTi', serif !important;
+}
+
+.ant-collapse-content {
+  background: #FFFAF0 !important;
+  border-color: #C9A96E !important;
+}
+
+/* --- 树形连接线（族谱） --- */
+.tree-connector {
+  background: #C9A96E !important;
+}
+
+.gen-label {
+  background: #F5E6C8 !important;
+  border-color: #C9A96E !important;
+  color: #8B4513 !important;
+  font-family: 'Noto Serif SC', 'STKaiti', 'KaiTi', serif !important;
+  letter-spacing: 2px;
+}
+
+/* --- 上传头像按钮 --- */
+.ant-upload {
+  font-family: 'Noto Serif SC', 'STKaiti', 'KaiTi', serif !important;
+}
+
+/* --- 分割线 --- */
+.ant-divider {
+  border-color: #C9A96E !important;
+}
+
+/* --- 步骤条 --- */
+.ant-steps-item-title {
+  font-family: 'Noto Serif SC', 'STKaiti', 'KaiTi', serif !important;
+}
+
+/* --- 提示气泡 --- */
+.ant-tooltip-inner {
+  background: #5C3D2E !important;
+  font-family: 'Noto Serif SC', 'STKaiti', 'KaiTi', serif !important;
+}
+
+.ant-tooltip-arrow::before {
+  background: #5C3D2E !important;
+}
+
+/* --- 空状态 --- */
+.ant-empty-description {
+  color: #8B4513 !important;
+}
+
+/* --- 滚动条美化 --- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #EDE0C8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C9A96E;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B8976A;
+}
+
+/* --- 响应式适配 --- */
+@media (max-width: 768px) {
+  .sider-title::before,
+  .sider-title::after {
+    display: none;
+  }
+}

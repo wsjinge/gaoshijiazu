@@ -16,24 +16,23 @@ import Relationship from './components/Relationship';
 import Statistics from './components/Statistics';
 import LunarCalendar from './components/LunarCalendar';
 import ImportExport from './components/ImportExport';
+import './styles/chinese-theme.css';
 import type { Member } from './types';
-import { getMembers, getTreeData } from './api';
+import { getMembers } from './api';
 
 const { Header, Content, Sider } = Layout;
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('tree');
   const [members, setMembers] = useState<Member[]>([]);
-  const [treeData, setTreeData] = useState<Member[]>([]);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const [formParentId, setFormParentId] = useState<number | null>(null);
 
   const loadData = async () => {
-    const [m, t] = await Promise.all([getMembers(), getTreeData()]);
+    const m = await getMembers();
     setMembers(m);
-    setTreeData(t);
   };
 
   useEffect(() => { loadData(); }, []);
@@ -71,7 +70,6 @@ const App: React.FC = () => {
       case 'tree':
         return (
           <FamilyTreePage
-            treeData={treeData}
             members={members}
             selectedMember={selectedMember}
             onSelect={setSelectedMember}
@@ -110,12 +108,34 @@ const App: React.FC = () => {
   };
 
   return (
-    <ConfigProvider locale={zhCN} theme={{ algorithm: theme.defaultAlgorithm, token: { colorPrimary: '#8B4513' } }}>
+    <ConfigProvider
+      locale={zhCN}
+      theme={{
+        algorithm: theme.defaultAlgorithm,
+        token: {
+          colorPrimary: '#B22222',
+          colorBgLayout: '#F5E6C8',
+          colorBgContainer: '#FFF8DC',
+          colorBorderSecondary: '#C9A96E',
+          colorText: '#2C2C2C',
+          colorTextHeading: '#8B4513',
+          borderRadius: 8,
+          fontFamily: "'Noto Serif SC','Source Han Serif SC','SimSun','STSong',serif",
+          fontSize: 14,
+        },
+        components: {
+          Menu: {
+            colorItemBg: 'transparent',
+            colorItemText: '#5C3D2E',
+            colorItemTextSelected: '#B22222',
+            colorItemBgSelected: 'rgba(178,34,34,0.08)',
+          },
+        },
+      }}
+    >
       <Layout style={{ minHeight: '100vh' }}>
-        <Sider width={200} theme="light" style={{ borderRight: '1px solid #f0f0f0' }}>
-          <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #f0f0f0' }}>
-            <h2 style={{ color: '#8B4513', margin: 0, fontSize: 18 }}>📜 高氏家族</h2>
-          </div>
+        <Sider width={200} theme="light" style={{ background: 'transparent' }}>
+          <div className="sider-title">高氏家族</div>
           <Menu
             mode="inline"
             selectedKeys={[currentPage]}
@@ -125,7 +145,7 @@ const App: React.FC = () => {
           />
         </Sider>
         <Layout>
-          <Content style={{ padding: 24, background: '#fff', minHeight: 'calc(100vh - 64px)', overflow: 'auto' }}>
+          <Content style={{ padding: 24, minHeight: 'calc(100vh - 64px)', overflow: 'auto' }}>
             {renderPage()}
           </Content>
         </Layout>
